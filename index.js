@@ -46,6 +46,34 @@ const cloneRepos = async (repos) => {
   });
 };
 
+const cleanUpNodeModules = (repos) => {
+  fs.readdir(DOWNLOAD_FOLDER, (err, repos) => {
+    if (err) {
+      console.error("Error reading the download folder:", err);
+      return;
+    }
+
+    repos.forEach((repo) => {
+      const repoPath = path.join(DOWNLOAD_FOLDER, repo);
+      const nodeModulesPath = path.join(repoPath, "node_modules");
+
+      // Check if the node_modules folder exists
+      if (fs.existsSync(nodeModulesPath)) {
+        // Delete the node_modules folder
+        fs.rm(nodeModulesPath, { recursive: true, force: true }, (err) => {
+          if (err) {
+            console.error(`Failed to delete node_modules in ${repo}:`, err);
+          } else {
+            console.log(`Deleted node_modules in ${repo}`);
+          }
+        });
+      } else {
+        console.log(`No node_modules folder in ${repo}`);
+      }
+    });
+  });
+};
+
 const run = async () => {
   if (!fs.existsSync(DOWNLOAD_FOLDER)) {
     fs.mkdirSync(DOWNLOAD_FOLDER);
@@ -53,6 +81,7 @@ const run = async () => {
 
   const repos = await getRepos();
   cloneRepos(repos).catch((error) => console.error(error));
+  cleanUpNodeModules(repos);
 };
 
 run();
