@@ -6,6 +6,7 @@ const sanitize = require("sanitize-filename");
 require("dotenv").config();
 
 const GITHUB_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
+const GITHUB_USERNAME = process.env.GITHUB_USERNAME;
 const DOWNLOAD_FOLDER = process.env.DOWNLOAD_FOLDER ?? `${__dirname}/repos`;
 const ignoredRepos = process.env.IGNORED_REPOS
   ? process.env.IGNORED_REPOS.split(",")
@@ -27,6 +28,7 @@ const getRepos = async () => {
 const cloneRepos = async (repos) => {
   repos.forEach((repo) => {
     const repoName = sanitize(repo.split("/").pop().replace(".git", ""));
+    const repoUrl = `https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/${repoName}.git`;
     const repoPath = path.join(DOWNLOAD_FOLDER, repoName);
 
     if (ignoredRepos.includes(repoName)) {
@@ -36,7 +38,7 @@ const cloneRepos = async (repos) => {
 
     if (!fs.existsSync(repoPath)) {
       try {
-        execSync(`git clone ${repo} "${repoPath}"`, { stdio: "inherit" });
+        execSync(`git clone ${repoUrl} "${repoPath}"`, { stdio: "inherit" });
       } catch (error) {
         console.error(`Failed to clone ${repo}: ${error.message}`);
       }
